@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,14 +22,21 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class LogInFragment extends Fragment {
+
+    private ArrayList<HealthLabel> healthLabels = new ArrayList<>();
 
     private FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authStateListener;
@@ -48,23 +56,58 @@ public class LogInFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        auth = FirebaseAuth.getInstance();
-        setListener();
 
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(R.string.app_name);
 
-        database = FirebaseDatabase.getInstance().getReference(TAG);
+        auth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance().getReference();
 
         rootView = inflater.inflate(R.layout.fragment_log_in, container, false);
         button1 = rootView.findViewById(R.id.buttonSignUp);
         button2 = rootView.findViewById(R.id.buttonLogIn);
 
+        theContext = (Activity) getContext();
+
+        setListener();
         button1.setOnClickListener(new GoButtonClickListener());
         button2.setOnClickListener(new GoButtonClickListener());
-        theContext = (Activity) getContext();
 
         // Inflate the layout for this fragment
         return rootView;
+    }
+
+    private void getHealthLabels(final String email) {
+
+        DatabaseReference labelRef = database.child("labels");
+        //You can use the single or the value.. depending if you want to keep track
+
+        labelRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snap: dataSnapshot.getChildren()) {
+                    String labelText = snap.getValue().toString();
+                    Log.d("hi", labelText);
+                    healthLabels.add(new HealthLabel(labelText, false));
+                }
+                storeUser(email);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(theContext, "loading labels falied", Toast.LENGTH_SHORT).show();
+                storeUser(email);
+            }
+        });
+    }
+
+    private void storeUser(String email) {
+        // Sign in success, update UI with the signed-in user's information
+        user = auth.getCurrentUser();
+
+        // Add user to database
+        String userUid = user.getUid();
+        UserData newUserData = new UserData(email, userUid, healthLabels);
+        database.child(TAG).child(userUid).setValue(newUserData);
     }
 
     private void setListener() {
@@ -107,13 +150,16 @@ public class LogInFragment extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            user = auth.getCurrentUser();
-
-                            // Add user to database
-                            String userUid = user.getUid();
-                            UserData newUserData = new UserData(email, userUid);
-                            database.child(userUid).setValue(newUserData);
+                            getHealthLabels(email);
+//                            // Sign in success, update UI with the signed-in user's information
+//                            user = auth.getCurrentUser();
+//                            // Add user to database
+//                            String userUid = user.getUid();
+//                            UserData newUserData = new UserData(email, userUid, healthLabels);
+//                            database.child(userUid).setValue(newUserData);
+//
+//                            Toast.makeText(theContext.getApplicationContext(), healthLabels.get(0).name,
+//                                    Toast.LENGTH_SHORT).show();
                         }
                         else {
                             // If sign in fails, display a message to the user.
@@ -143,6 +189,7 @@ public class LogInFragment extends Fragment {
     }
 
     private void startFavouritesFragment() {
+        database.child(user.getUid()).child("labels").setValue(healthLabels);
         MyFavouritesFragment myFavouritesFragment = new MyFavouritesFragment();
         Bundle args = new Bundle();
         args.putString("userUid", user.getUid());

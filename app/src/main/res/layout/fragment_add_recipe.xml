@@ -6,96 +6,102 @@
     tools:context="com.example.svenu.svenuitendaalwhatsfordinner.AddRecipeFragment">
 
 
-    <android.support.constraint.ConstraintLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <EditText
-            android:id="@+id/my_recipe_name"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:ems="10"
-            android:hint="Name"
-            android:inputType="textPersonName"
-            app:layout_constraintBottom_toTopOf="@+id/scrollViewIngredients"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.503"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/my_recipe_instructions"
-            android:layout_width="match_parent"
-            android:layout_height="144dp"
-            android:layout_marginBottom="52dp"
-            android:ems="10"
-            android:hint="Instructions"
-            android:inputType="textMultiLine"
-            android:lines="6"
-            android:maxLines="10"
-            android:minLines="4"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:layout_editor_absoluteX="0dp" />
-
-        <ScrollView
-            android:id="@+id/scrollViewIngredients"
-            android:layout_width="match_parent"
-            android:layout_height="70sp"
-            android:layout_marginLeft="10sp"
-            android:layout_marginRight="10sp"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:layout_editor_absoluteY="107dp">
-
-            <LinearLayout
+            <EditText
+                android:id="@+id/my_recipe_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
-        </ScrollView>
-
-        <ScrollView
-            android:id="@+id/scrollViewLabels"
-            android:layout_width="match_parent"
-            android:layout_height="120sp"
-            android:layout_marginLeft="10sp"
-            android:layout_marginRight="10sp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/my_recipe_instructions"
-            app:layout_constraintTop_toBottomOf="@+id/scrollViewIngredients"
-            tools:layout_editor_absoluteX="8dp">
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:hint="Recipe name"
+                android:inputType="textCapSentences|textPersonName"
+                app:layout_constraintBottom_toTopOf="@+id/scrollViewLabels"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.503"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
 
             <LinearLayout
+                android:id="@+id/labelLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/ingredientName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ems="10"
-                        android:hint="Ingredient"
-                        android:inputType="text" />
-
-                    <Button
-                        android:id="@+id/buttonAddIngredient"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Add" />
-                </LinearLayout>
             </LinearLayout>
-        </ScrollView>
 
-    </android.support.constraint.ConstraintLayout>
+            <LinearLayout
+                android:id="@+id/ingredientLinearLayout"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="0dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/ingredientName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="Ingredient"
+                    android:inputType="text" />
+
+                <Button
+                    android:id="@+id/buttonAddIngredient"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Add" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/my_recipe_instructions"
+                android:layout_width="match_parent"
+                android:layout_height="100sp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:ems="10"
+                android:hint="Instructions"
+                android:inputType="textCapSentences|textMultiLine"
+                android:lines="6"
+                android:maxLines="10"
+                android:minLines="4"
+                app:layout_constraintBottom_toTopOf="@+id/buttonSubmitRecipe"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.507"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <Button
+                android:id="@+id/buttonSubmitRecipe"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:text="Submit recipe"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </LinearLayout>
+    </ScrollView>
 </FrameLayout>

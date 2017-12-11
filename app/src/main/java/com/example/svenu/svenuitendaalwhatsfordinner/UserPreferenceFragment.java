@@ -10,9 +10,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,9 +38,10 @@ public class UserPreferenceFragment extends Fragment {
 
     private FirebaseUser user;
     private DatabaseReference mDatabase;
-    private String TAG = "labels";
+    //private String TAG = ;
 
     private LinearLayout linearLayout;
+    private Button button;
     private ArrayList<CheckBox> checkBoxes;
 
     public UserPreferenceFragment() {
@@ -54,43 +57,16 @@ public class UserPreferenceFragment extends Fragment {
 
         context = (Activity) getContext();
         user = FirebaseAuth.getInstance().getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference(TAG);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
         linearLayout = rootView.findViewById(R.id.LinearLayoutUserPreferences);
+        button = rootView.findViewById(R.id.buttonSubmitPreferences);
 
         setDataListener();
+        button.setOnClickListener(new GoButtonClickListener());
 
         // diet: balanced, high-protein, high-fiber, low-fat, low-carb, low-sodium
         // health: vegan, vegetarian, paleo, dairy-free, gluten-free, wheat-free, fat-free,
         // low-sugar, egg-free, peanut-free, tree-nut-free, soy-free, fish-free, shellfish-free
-//        String[] labelTexts = new String[] {
-//                "Balanced", "High protein", "High fiber", "Low fat", "Low carb", "Low sodium",
-//                "Vegan", "Vegetarian", "Paleo", "Dairy free", "gluten-free", "wheat-free",
-//                "fat-free", "low-sugar", "egg-free", "peanut-free", "tree-nut-free", "soy-free",
-//                "fish-free", "shellfish-free"
-//        };
-//        String[] labelNames = new String[] {
-//               "balanced", "high-protein", "high-fiber", "low-fat", "low-carb", "low-sodium",
-//                "vegan", "vegetarian", "paleo", "dairy-free", "gluten-free", "wheat-free",
-//                "fat-free", "low-sugar", "egg-free", "peanut-free", "tree-nut-free", "soy-free",
-//                "fish-free", "shellfish-free"
-//        };
-//        int numberOfLabels = labelNames.length;
-//
-//        String[] labelTexts = new String[numberOfLabels];
-//
-//        CheckBox[] labels = new CheckBox[numberOfLabels];
-//        for (int i = 0; i < numberOfLabels; i++) {
-//            String labelText = labelNames[i].replace("-", " ");
-//            labelText = labelText.substring(0, 1).toUpperCase() + labelText.substring(1);
-//            labelTexts[i] = labelText;
-//
-//            int id = getResources().getIdentifier("label" + i, "id", context.getPackageName());
-//            Log.d("id", "" + id);
-//            CheckBox checkBox = rootView.findViewById(id);
-//            checkBox.setText(labelText);
-//            checkBox.setTag(labelNames[i]);
-//            labels[i] = checkBox;
-//        }
 
         //TODO
 
@@ -100,19 +76,25 @@ public class UserPreferenceFragment extends Fragment {
 
     private void setDataListener() {
         //You can use the single or the value.. depending if you want to keep track
-        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+        mDatabase.child("users").child(user.getUid()).child("labels").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("inside", "OnDataChange");
                 checkBoxes = new ArrayList<>();
                 int idCount = 0;
                 for (DataSnapshot snap: dataSnapshot.getChildren()) {
                     int resourceId = context.getResources().getIdentifier("checkbox_" + idCount, "string", context.getPackageName());
                     CheckBox checkBox = new CheckBox(context);
-                    String checkBoxText = snap.getValue().toString();
-                    String tagText = checkBoxText.replace("-", " ");
-                    tagText = tagText.substring(0, 1).toUpperCase() + tagText.substring(1);
-                    checkBox.setText(tagText);
-                    checkBox.setTag(checkBoxText);
+
+                    HealthLabel healthLabel = snap.getValue(HealthLabel.class);
+                    String tagText = healthLabel.getName();
+                    String checkBoxText = tagText.replace("-", " ");
+                    checkBoxText = checkBoxText.substring(0, 1).toUpperCase() + checkBoxText.substring(1);
+                    boolean isChecked = healthLabel.getPreference();
+
+                    checkBox.setText(checkBoxText);
+                    checkBox.setTag(tagText);
+                    checkBox.setChecked(isChecked);
                     checkBox.setId(resourceId);
                     checkBoxes.add(checkBox);
                     idCount += 1;
@@ -131,6 +113,28 @@ public class UserPreferenceFragment extends Fragment {
         int size = checkBoxes.size();
         for (int i = 0; i < size; i++) {
             linearLayout.addView(checkBoxes.get(i));
+        }
+    }
+
+    private class GoButtonClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            int size = checkBoxes.size();
+            ArrayList<HealthLabel> healthLabels = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                CheckBox checkBox = checkBoxes.get(i);
+                boolean isChecked = checkBox.isChecked();
+                String labelName = checkBox.getTag().toString();
+                HealthLabel healthLabel = new HealthLabel(labelName, isChecked);
+                healthLabels.add(healthLabel);
+            }
+            updateDatabase(healthLabels);
+            Toast.makeText(context, "Changes submitted", Toast.LENGTH_SHORT).show();
+        }
+
+        private void updateDatabase(ArrayList<HealthLabel> healthLabels) {
+            DatabaseReference userPreferences = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("labels");
+            userPreferences.setValue(healthLabels);
         }
     }
 }

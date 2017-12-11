@@ -13,7 +13,7 @@ public class Recipe {
     public String source; //source
     public String url; //url
     public String image; //image
-    public ArrayList<String> labels; //dietLabels and healthLabels:
+    public ArrayList<HealthLabel> labels; //dietLabels and healthLabels:
     // diet: balanced, high-protein, high-fiber, low-fat, low-carb, low-sodium
     // health: vegan, vegetarian, paleo, dairy-free, gluten-free, wheat-free, fat-free,
     // low-sugar, egg-free, peanut-free, tree-nut-free, soy-free, fish-free, shellfish-free
@@ -26,7 +26,7 @@ public class Recipe {
     public Recipe() {}
 
     // Constructor for user created recipe
-    public Recipe(String aUserName, String aName, ArrayList<String> aLabels, ArrayList<String> anIngredients, String anInstructions) {
+    public Recipe(String aUserName, String aName, ArrayList<HealthLabel> aLabels, ArrayList<String> anIngredients, String anInstructions) {
         this.userName = aUserName;
         this.name = aName;
         this.labels = aLabels;
@@ -36,7 +36,7 @@ public class Recipe {
     }
 
     // Constructor for the api
-    public Recipe(String aUserName, String aName, String aSource, String anUrl, String anImage, ArrayList<String> aLabels, ArrayList<String> anIngredients, float aCalories) {
+    public Recipe(String aUserName, String aName, String aSource, String anUrl, String anImage, ArrayList<HealthLabel> aLabels, ArrayList<String> anIngredients, float aCalories) {
         this.userName = aUserName;
         this.name = aName;
         this.source = aSource;

@@ -13,16 +13,14 @@ public class UserData {
     public String userName;
     public String userUid;
 
-    public ArrayList<Boolean> labels = new ArrayList<>();
+    public ArrayList<HealthLabel> labels = new ArrayList<>();
 
     public UserData() {
     }
 
-    public UserData(String aUserName, String aUserUid) {
+    public UserData(String aUserName, String aUserUid, ArrayList<HealthLabel> healthLabels) {
         this.userName = aUserName;
         this.userUid = aUserUid;
-        for (int i = 0; i < 20; i++) {
-            this.labels.add(false);
-        }
+        this.labels = healthLabels;
     }
 }

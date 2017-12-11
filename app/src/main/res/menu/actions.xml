@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/whats_actually_for_dinner_menu"
+        android:title="What\'s for dinner?" />
+    <item
+        android:id="@+id/my_favourites_menu"
+        android:title="My favourites"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/all_favourites_menu"
+        android:title="All favourites"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/add_recipe_menu"
+        android:title="Add recipe"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/search_recipe_menu"
+        android:title="Search recipe"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/user_menu"
+        android:title="User preferences"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/log_out_menu"
+        android:title="Log out"
+        app:showAsAction="never"/>
+</menu>

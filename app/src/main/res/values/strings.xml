@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">SvenUitendaalWhatsForDinner</string>
+    <string name="favourites_name">My favourites</string>
+    <string name="favourites_all_name">Favourites</string>
+    <string name="add_recipe_name">Add recipe</string>
+    <string name="search_recipe_name">Search recipe</string>
+    <string name="user_name">Preferences</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

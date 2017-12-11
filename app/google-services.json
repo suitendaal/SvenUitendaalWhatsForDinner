@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "33374201358",
+    "firebase_url": "https://svenuitendaalwhatsfordinner.firebaseio.com",
+    "project_id": "svenuitendaalwhatsfordinner",
+    "storage_bucket": "svenuitendaalwhatsfordinner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:33374201358:android:10aa096b71a25401",
+        "android_client_info": {
+          "package_name": "com.example.svenu.svenuitendaalwhatsfordinner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "33374201358-v0aklel46moje6kipta2m4fppjur6hsl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.svenu.svenuitendaalwhatsfordinner",
+            "certificate_hash": "ae53424fb54e719d220b52bf1806cd65fb694231"
+          }
+        },
+        {
+          "client_id": "33374201358-nqb79cmjk2qbsalcvlg2fpqvsnopgdbn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYaykeHsVK7AmB_ZjK4AUjfjWWpQPFFes"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "33374201358-nqb79cmjk2qbsalcvlg2fpqvsnopgdbn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

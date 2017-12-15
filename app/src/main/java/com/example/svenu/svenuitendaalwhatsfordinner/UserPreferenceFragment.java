@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -57,21 +59,33 @@ public class UserPreferenceFragment extends Fragment {
 
         context = (Activity) getContext();
         user = FirebaseAuth.getInstance().getCurrentUser();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        linearLayout = rootView.findViewById(R.id.LinearLayoutUserPreferences);
-        button = rootView.findViewById(R.id.buttonSubmitPreferences);
 
-        setDataListener();
-        button.setOnClickListener(new GoButtonClickListener());
+        if (user == null) {
+            logOut();
+        }
+        else {
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+            linearLayout = rootView.findViewById(R.id.LinearLayoutUserPreferences);
+            button = rootView.findViewById(R.id.buttonSubmitPreferences);
+
+            setDataListener();
+            button.setOnClickListener(new GoButtonClickListener());
+        }
 
         // diet: balanced, high-protein, high-fiber, low-fat, low-carb, low-sodium
         // health: vegan, vegetarian, paleo, dairy-free, gluten-free, wheat-free, fat-free,
         // low-sugar, egg-free, peanut-free, tree-nut-free, soy-free, fish-free, shellfish-free
 
-        //TODO
-
         // Inflate the layout for this fragment
         return rootView;
+    }
+
+    private void logOut() {
+        FirebaseAuth.getInstance().signOut();
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.fragment_container, new LogInFragment(), "categories");
+        ft.commit();
     }
 
     private void setDataListener() {
@@ -93,7 +107,7 @@ public class UserPreferenceFragment extends Fragment {
                     boolean isChecked = healthLabel.getPreference();
 
                     checkBox.setText(checkBoxText);
-                    checkBox.setTag(tagText);
+                    checkBox.setTag(healthLabel);
                     checkBox.setChecked(isChecked);
                     checkBox.setId(resourceId);
                     checkBoxes.add(checkBox);
@@ -124,8 +138,8 @@ public class UserPreferenceFragment extends Fragment {
             for (int i = 0; i < size; i++) {
                 CheckBox checkBox = checkBoxes.get(i);
                 boolean isChecked = checkBox.isChecked();
-                String labelName = checkBox.getTag().toString();
-                HealthLabel healthLabel = new HealthLabel(labelName, isChecked);
+                HealthLabel healthLabel = (HealthLabel) checkBox.getTag();
+                healthLabel.setPreference(isChecked);
                 healthLabels.add(healthLabel);
             }
             updateDatabase(healthLabels);

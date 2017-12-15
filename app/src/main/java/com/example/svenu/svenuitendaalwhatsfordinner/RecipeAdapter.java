@@ -34,6 +34,7 @@ public class RecipeAdapter extends ArrayAdapter {
         theContext = context;
         recipes = arrayList;
         Log.d("inside", "constructing adapter");
+        Log.d("list", arrayList.toString());
     }
 
     @NonNull
@@ -60,6 +61,8 @@ public class RecipeAdapter extends ArrayAdapter {
         if (image != null) {
             imageRequestFunction(image, imageView);
         }
+
+        view.setTag(recipe);
 
         return view;
     }

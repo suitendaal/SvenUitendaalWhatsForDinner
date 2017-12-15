@@ -1,19 +1,26 @@
 package com.example.svenu.svenuitendaalwhatsfordinner;
 
+import android.app.Activity;
+import android.app.Application;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    private boolean visibility = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,29 +32,37 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actions, menu);
-        return super.onCreateOptionsMenu(menu);
+        MenuItem[] menuItems = new MenuItem[] {
+                menu.findItem(R.id.whats_actually_for_dinner_menu),
+                menu.findItem(R.id.my_favourites_menu),
+                menu.findItem(R.id.all_favourites_menu),
+                menu.findItem(R.id.add_recipe_menu),
+                menu.findItem(R.id.search_recipe_menu),
+                menu.findItem(R.id.user_menu),
+                menu.findItem(R.id.log_out_menu)
+        };
+        for (int i = 0; i < menuItems.length; i++) {
+            menuItems[i].setVisible(visibility);
+        }
+        return true;
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         Bundle args;
         switch (item.getItemId()) {
             case R.id.whats_actually_for_dinner_menu:
-//                startFragment();
+                startFragment(new WhatsActuallyForDinnerFragment());
                 setMenuVisibility(true);
-                getSupportActionBar().setTitle(R.string.app_name);
                 break;
             case R.id.my_favourites_menu:
-                args = new Bundle();
-                args.putBoolean("isPublic", false);
-                startFragment(new MyFavouritesFragment(), args);
+                startFragment(new MyFavouritesFragment());
                 setMenuVisibility(true);
                 break;
             case R.id.all_favourites_menu:
-                args = new Bundle();
-                args.putBoolean("isPublic", true);
-                startFragment(new MyFavouritesFragment(), args);
+                startFragment(new AllFavouritesFragment());
                 setMenuVisibility(true);
                 break;
             case R.id.add_recipe_menu:
@@ -55,9 +70,8 @@ public class MainActivity extends AppCompatActivity {
                 setMenuVisibility(true);
                 break;
             case R.id.search_recipe_menu:
-//                startFragment();
+                startFragment(new SearchFragment());
                 setMenuVisibility(true);
-                getSupportActionBar().setTitle(R.string.search_recipe_name);
                 break;
             case R.id.user_menu:
                 startFragment(new UserPreferenceFragment());
@@ -65,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.log_out_menu:
                 FirebaseAuth.getInstance().signOut();
+                FragmentManager fm = getSupportFragmentManager();
+                if (fm != null) {
+                    fm.popBackStack();
+                }
                 startFragment(new LogInFragment());
                 setMenuVisibility(false);
                 break;
@@ -74,38 +92,37 @@ public class MainActivity extends AppCompatActivity {
 
     private void startFragment(Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
-        //TODO: sluit vorige fragment
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.replace(R.id.fragment_container, fragment);
-        ft.addToBackStack(null);
-        ft.commit();
-    }
-
-    private void startFragment(Fragment fragment, Bundle args) {
-        FragmentManager fm = getSupportFragmentManager();
-        //TODO: sluit vorige fragment
-        FragmentTransaction ft = fm.beginTransaction();
-        fragment.setArguments(args);
-        ft.replace(R.id.fragment_container, fragment);
-        ft.addToBackStack(null);
-        ft.commit();
-    }
-
-    private void setMenuVisibility(boolean visibility) {
-        MenuItem[] menuItems = new MenuItem[] {
-            findViewById(R.id.whats_actually_for_dinner_menu),
-            findViewById(R.id.my_favourites_menu),
-            findViewById(R.id.all_favourites_menu),
-            findViewById(R.id.add_recipe_menu),
-            findViewById(R.id.search_recipe_menu),
-            findViewById(R.id.user_menu),
-            findViewById(R.id.log_out_menu)
-        };
-
-        int size = menuItems.length;
-//        for (int i = 0; i < size; i++) {
-//            menuItems[i].setVisible(visibility);
+//        if (fm != null) {
+//            fm.popBackStack();
 //        }
-        this.invalidateOptionsMenu();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.fragment_container, fragment);
+        ft.addToBackStack(null);
+        ft.commit();
+    }
+
+    public void setMenuVisibility(boolean aVisibility) {
+        visibility = aVisibility;
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onBackPressed() {
+        List fragmentList = getSupportFragmentManager().getFragments();
+
+        boolean handled = false;
+        for(Object o : fragmentList) {
+            if(o instanceof LogInFragment) {
+                handled = ((LogInFragment)o).onBackPressed();
+                if(handled) {
+                    Log.d("activity: ", "close");
+                    break;
+                }
+            }
+        }
+
+        if(!handled) {
+            super.onBackPressed();
+        }
     }
 }

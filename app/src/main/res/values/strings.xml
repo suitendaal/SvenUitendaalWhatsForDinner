@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SvenUitendaalWhatsForDinner</string>
+    <string name="app_name">What\'s for dinner</string>
     <string name="favourites_name">My favourites</string>
     <string name="favourites_all_name">Favourites</string>
     <string name="add_recipe_name">Add recipe</string>

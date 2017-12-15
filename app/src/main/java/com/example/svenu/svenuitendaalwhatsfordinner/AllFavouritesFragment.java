@@ -2,14 +2,12 @@ package com.example.svenu.svenuitendaalwhatsfordinner;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,12 +26,9 @@ import java.util.ArrayList;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Class to show all users favourites
  */
-public class MyFavouritesFragment extends ListFragment {
-
-    private static String TAG = "userRecipes";
-    private static String userid;
+public class AllFavouritesFragment extends ListFragment {
 
     private Activity context;
     private FirebaseDatabase database;
@@ -41,7 +36,7 @@ public class MyFavouritesFragment extends ListFragment {
     private FirebaseAuth auth;
     private FirebaseUser user;
 
-    public MyFavouritesFragment() {
+    public AllFavouritesFragment() {
         // Required empty public constructor
     }
 
@@ -56,22 +51,26 @@ public class MyFavouritesFragment extends ListFragment {
         user = auth.getCurrentUser();
         context = (Activity) getContext();
 
+        // check if user is logged in
         if (user == null) {
             logOut();
         }
         else {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.favourites_name);
+            // set titlebar title
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.favourites_all_name);
+            // show favourites
             fillInListView();
         }
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_my_favourites, container, false);
+        return inflater.inflate(R.layout.fragment_all_favourites, container, false);
     }
 
     private void fillInListView() {
         final ArrayList<Recipe> recipes = new ArrayList<>();
 
-        DatabaseReference favouritesDatabase = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("recipes");
+        // load recipes from database
+        DatabaseReference favouritesDatabase = FirebaseDatabase.getInstance().getReference("public_recipes");
         favouritesDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -80,7 +79,7 @@ public class MyFavouritesFragment extends ListFragment {
                     recipes.add(recipe);
                 }
                 RecipeAdapter recipeAdapter = new RecipeAdapter(context.getApplicationContext(), recipes);
-                MyFavouritesFragment.this.setListAdapter(recipeAdapter);
+                AllFavouritesFragment.this.setListAdapter(recipeAdapter);
             }
 
             @Override
@@ -102,6 +101,7 @@ public class MyFavouritesFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
+        // show whole recipe
         Recipe recipe = (Recipe) v.getTag();
         startRecipeFragment(recipe);
     }
@@ -111,7 +111,7 @@ public class MyFavouritesFragment extends ListFragment {
         Toast.makeText(context, recipe.name, Toast.LENGTH_SHORT).show();
 
         //upload to database
-        final DatabaseReference updateDatabase = FirebaseDatabase.getInstance().getReference("public_recipes");
+        final DatabaseReference updateDatabase = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("recipes");
         updateDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

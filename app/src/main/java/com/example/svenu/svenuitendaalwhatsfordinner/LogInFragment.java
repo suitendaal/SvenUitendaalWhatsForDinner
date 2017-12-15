@@ -2,18 +2,17 @@ package com.example.svenu.svenuitendaalwhatsfordinner;
 
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
+import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +31,7 @@ import java.util.ArrayList;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Fragment to log in
  */
 public class LogInFragment extends Fragment {
 
@@ -77,7 +76,7 @@ public class LogInFragment extends Fragment {
     }
 
     private void getHealthLabels(final String email) {
-
+        // get all healthlabel and store them with the new user
         DatabaseReference labelRef = database.child("labels");
         //You can use the single or the value.. depending if you want to keep track
 
@@ -85,16 +84,14 @@ public class LogInFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap: dataSnapshot.getChildren()) {
-                    String labelText = snap.getValue().toString();
-                    Log.d("hi", labelText);
-                    healthLabels.add(new HealthLabel(labelText, false));
+                    HealthLabel healthLabel = snap.getValue(HealthLabel.class);
+                    healthLabels.add(healthLabel);
                 }
                 storeUser(email);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(theContext, "loading labels falied", Toast.LENGTH_SHORT).show();
                 storeUser(email);
             }
         });
@@ -111,6 +108,7 @@ public class LogInFragment extends Fragment {
     }
 
     private void setListener() {
+        // listener to check if the user is logged in, then directs it to the my favourites fragment
         Log.d(TAG, "setListener");
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -121,10 +119,10 @@ public class LogInFragment extends Fragment {
                             Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "onAuthStateChanged:signed_in" + user.getUid());
                     startFavouritesFragment();
+
                 }
                 else {
-                    Toast.makeText(theContext.getApplicationContext(), "Log in failed",
-                            Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onAuthStateChanged:LogIn Failed");
                 }
             }
         };
@@ -145,25 +143,17 @@ public class LogInFragment extends Fragment {
     }
 
     public void createUser(final String email, String password) {
+        // create user
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(theContext, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             getHealthLabels(email);
-//                            // Sign in success, update UI with the signed-in user's information
-//                            user = auth.getCurrentUser();
-//                            // Add user to database
-//                            String userUid = user.getUid();
-//                            UserData newUserData = new UserData(email, userUid, healthLabels);
-//                            database.child(userUid).setValue(newUserData);
-//
-//                            Toast.makeText(theContext.getApplicationContext(), healthLabels.get(0).name,
-//                                    Toast.LENGTH_SHORT).show();
                         }
                         else {
                             // If sign in fails, display a message to the user.
-                            Toast.makeText(theContext.getApplicationContext(), "Cannot create user",
+                            Toast.makeText(theContext.getApplicationContext(), "User already exists",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -171,6 +161,7 @@ public class LogInFragment extends Fragment {
     }
 
     private void logInUser(String email, String password) {
+        // log in user
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(theContext, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -194,11 +185,14 @@ public class LogInFragment extends Fragment {
         Bundle args = new Bundle();
         args.putString("userUid", user.getUid());
         myFavouritesFragment.setArguments(args);
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, myFavouritesFragment)
-                .addToBackStack(null)
-                .commit();
+        FragmentManager fm = getFragmentManager();
+        if (fm != null) {
+            fm.popBackStack();
+        }
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.fragment_container, myFavouritesFragment);
+        ft.addToBackStack(null);
+        ft.commit();
     }
 
     private class GoButtonClickListener implements View.OnClickListener {
@@ -225,5 +219,10 @@ public class LogInFragment extends Fragment {
                 }
             }
         }
+    }
+
+    public boolean onBackPressed() {
+        getActivity().finish();
+        return true;
     }
 }

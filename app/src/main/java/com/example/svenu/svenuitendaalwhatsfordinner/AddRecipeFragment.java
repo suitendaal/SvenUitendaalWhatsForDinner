@@ -4,6 +4,8 @@ package com.example.svenu.svenuitendaalwhatsfordinner;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,7 +33,7 @@ import java.util.ArrayList;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Class where the user can add his own recipes
  */
 public class AddRecipeFragment extends Fragment {
 
@@ -59,6 +61,7 @@ public class AddRecipeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // get rootview and set titlebar title
         rootView = inflater.inflate(R.layout.fragment_add_recipe, container, false);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(R.string.add_recipe_name);
 
@@ -78,10 +81,24 @@ public class AddRecipeFragment extends Fragment {
         submitIngredient.setOnClickListener(new GoSubmitIngredientClickListener());
         submitRecipe.setOnClickListener(new GoSubmitRecipeClickListener());
 
-        loadLabels();
+        // check if the user is signed in
+        if (user == null) {
+            logOut();
+        }
+        else {
+            loadLabels();
+        }
 
         // Inflate the layout for this fragment
         return rootView;
+    }
+
+    private void logOut() {
+        FirebaseAuth.getInstance().signOut();
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        ft.replace(R.id.fragment_container, new LogInFragment(), "categories");
+        ft.commit();
     }
 
     private void loadLabels() {
@@ -89,22 +106,26 @@ public class AddRecipeFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d("inside", "OnDataChange");
-                checkBoxes = new ArrayList<>();
                 int idCount = 0;
+                checkBoxes = new ArrayList<>();
                 for (DataSnapshot snap: dataSnapshot.getChildren()) {
+                    // calculate an id for the checkbox (werkt niet meer?)
                     int resourceId = context.getResources().getIdentifier("checkbox_" + idCount, "string", context.getPackageName());
+
+                    // create checkbox
                     CheckBox checkBox = new CheckBox(context);
 
-                    String tagText = snap.getValue().toString();
-                    String checkBoxText = tagText.replace("-", " ");
+                    HealthLabel tagHealthlabel = snap.getValue(HealthLabel.class);
+                    String checkBoxText = tagHealthlabel.getName().replace("-", " ");
                     checkBoxText = checkBoxText.substring(0, 1).toUpperCase() + checkBoxText.substring(1);
 
                     checkBox.setText(checkBoxText);
-                    checkBox.setTag(tagText);
+                    checkBox.setTag(tagHealthlabel);
                     checkBox.setId(resourceId);
                     checkBoxes.add(checkBox);
                     idCount += 1;
                 }
+                // show checkboxes
                 updateCheckboxes();
             }
 
@@ -124,19 +145,29 @@ public class AddRecipeFragment extends Fragment {
     }
 
     private class GoSubmitIngredientClickListener implements View.OnClickListener {
+
+        private int idCount = 0;
+
         @Override
         public void onClick(View view) {
+            // function to add an ingredient
             String ingredient = editText.getText().toString();
 
             if (!ingredient.equals("")) {
                 ingredients.add(ingredient);
                 editText.setText("");
 
+                // add ingredient to layout
                 LayoutParams lparamsLinear = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 LinearLayout newLinearLayout = new LinearLayout(context);
                 newLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
                 newLinearLayout.setLayoutParams(lparamsLinear);
-                int resourceId = context.getResources().getIdentifier(ingredient, "string", context.getPackageName());
+
+                // create resourceid (werkt niet meer?)
+                int resourceId = context.getResources().getIdentifier("ingredient_" + idCount, "string", context.getPackageName());
+                idCount += 1;
+//                int resourceId = context.getResources().getIdentifier(ingredient, "string", context.getPackageName());
+                Log.d("resourceId:", resourceId +"");
                 newLinearLayout.setId(resourceId);
                 newLinearLayout.setTag(ingredient);
                 newLinearLayout.setGravity(View.FOCUS_RIGHT);
@@ -163,9 +194,10 @@ public class AddRecipeFragment extends Fragment {
     private class GoDeleteClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
+            // delete ingredient
             Button button = (Button) view;
-            int recourseId = (Integer) button.getTag();
-            LinearLayout linearLayout = rootView.findViewById(recourseId);
+            int resourceId = (Integer) button.getTag();
+            LinearLayout linearLayout = rootView.findViewById(resourceId);
             String ingredient = linearLayout.getTag().toString();
             ingredientLinearLayout.removeView(linearLayout);
             ingredients.remove(ingredient);
@@ -182,9 +214,9 @@ public class AddRecipeFragment extends Fragment {
                 View v = labelLayout.getChildAt(i);
                 if (v instanceof CheckBox) {
                     boolean isChecked = ((CheckBox) v).isChecked();
-                    String labelName = v.getTag().toString();
-                    HealthLabel healthLabel = new HealthLabel(labelName, isChecked);
-                    healthLabels.add(healthLabel);
+                    HealthLabel myHealthLabel = (HealthLabel) v.getTag();
+                    myHealthLabel.setPreference(isChecked);
+                    healthLabels.add(myHealthLabel);
                 }
             }
 

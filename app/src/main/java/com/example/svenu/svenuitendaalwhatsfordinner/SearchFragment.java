@@ -36,7 +36,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Queue;
 import java.util.Random;
 
 
@@ -76,17 +75,20 @@ public class SearchFragment extends ListFragment {
 
         context = (Activity) getContext();
 
+        // load views
         editText = rootView.findViewById(R.id.recipeSearchText);
         button = rootView.findViewById(R.id.buttonSearch);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
 
+        // ensure user is logged in
         if (user == null) {
             logOut();
         }
         else {
             userUid = user.getUid();
             mDatabase = FirebaseDatabase.getInstance().getReference(userUid);
+            // load labels to checkbox
             getUserLabels();
         }
 
@@ -99,11 +101,13 @@ public class SearchFragment extends ListFragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                    // add healthlabels to list
                     HealthLabel healthLabel = snap.getValue(HealthLabel.class);
                     if (healthLabel.getPreference()) {
                         healthLabels.add(healthLabel);
                     }
                 }
+                // when healthlabels are loaded, setonclicklistener for search
                 button.setOnClickListener(new GoButtonClickListener());
             }
 
@@ -116,6 +120,7 @@ public class SearchFragment extends ListFragment {
 
 
     private class GoButtonClickListener implements View.OnClickListener {
+        // button to search recipe
         @Override
         public void onClick(View view) {
             String recipeToSearch = editText.getText().toString();
@@ -126,8 +131,10 @@ public class SearchFragment extends ListFragment {
     }
 
     private void searchRecipe(String recipeToSearch) {
+        // separate diet and health labels
         ArrayList<String> health = new ArrayList<>();
         ArrayList<String> diet = new ArrayList<>();
+
         int length = healthLabels.size();
         for (int i = 0; i < length; i++) {
             HealthLabel healthLabel = healthLabels.get(i);
@@ -143,18 +150,21 @@ public class SearchFragment extends ListFragment {
 
         String url = "https://api.edamam.com/search?q=" + recipeToSearch + "&app_id=" + appId + "&app_key=" + appKey;
 
+        // choose random healthlabel
         if (health.size() > 0) {
             int healthIndex = random.nextInt(health.size());
             String healthText = health.get(healthIndex);
             url += "&health=" + healthText;
         }
 
+        // choose random dietlabel
         if (diet.size() > 0) {
             int dietIndex = random.nextInt(diet.size());
             String dietText = diet.get(dietIndex);
             url += "&diet=" + dietText;
         }
 
+        // load results in listview
         loadResults(url);
     }
 
@@ -169,6 +179,7 @@ public class SearchFragment extends ListFragment {
                     recipes = new ArrayList<>();
                     JSONArray hits = response.getJSONArray("hits");
                     for (int i = 0; i < hits.length(); i++) {
+                        // save every hit to a recipe
                         JSONObject aRecipe = hits.getJSONObject(i).getJSONObject("recipe");
                         String username = user.getEmail();
                         String name = aRecipe.getString("label");
@@ -206,6 +217,7 @@ public class SearchFragment extends ListFragment {
                         Recipe recipe = new Recipe(username, name, source, urlRecipe, image, healthLabels, ingredients, calories);
                         recipes.add(recipe);
                     }
+                    // show recipes in list
                     setAdapterToList();
                 }
                 catch (JSONException exception) {
@@ -225,15 +237,13 @@ public class SearchFragment extends ListFragment {
     }
 
     private void setAdapterToList() {
-        Log.d("size", recipes.size() + "");
-        Log.d("adapter", "hoi");
+        // load listview
         RecipeAdapter recipeAdapter = new RecipeAdapter(context.getApplicationContext(), recipes);
-        Log.d("adapter", "setting to listview");
         setListAdapter(recipeAdapter);
-        Log.d("adapter", "setting to listview completed");
     }
 
     private void logOut() {
+        // log out and return to log in page
         FirebaseAuth.getInstance().signOut();
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
@@ -245,6 +255,7 @@ public class SearchFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
 
+        // show recipe
         Recipe recipe = (Recipe) v.getTag();
         startRecipeFragment(recipe);
     }
@@ -253,12 +264,13 @@ public class SearchFragment extends ListFragment {
         //TODO: make new dialogfragment
         Toast.makeText(context, recipe.name, Toast.LENGTH_SHORT).show();
 
-        //upload to database
+        // add recipe to user's favourites
         final DatabaseReference updateDatabase = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("recipes");
         updateDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 long size = dataSnapshot.getChildrenCount();
+                // recipe key
                 String recipeKey = "recipe_" + size;
                 updateDatabase.child(recipeKey).setValue(recipe);
                 Toast.makeText(context, recipe.name + " uploaded!", Toast.LENGTH_SHORT).show();
@@ -266,7 +278,6 @@ public class SearchFragment extends ListFragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
     }

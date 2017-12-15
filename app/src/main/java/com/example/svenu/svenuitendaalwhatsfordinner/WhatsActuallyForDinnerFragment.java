@@ -15,7 +15,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Does nothing yet
  */
 public class WhatsActuallyForDinnerFragment extends Fragment {
 
@@ -30,8 +30,11 @@ public class WhatsActuallyForDinnerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_whats_actually_for_dinner, container, false);
+        // set title bar title
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(R.string.app_name);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // ensure user is logged in
         if (user == null) {
             logOut();
         }
@@ -44,6 +47,7 @@ public class WhatsActuallyForDinnerFragment extends Fragment {
     }
 
     private void logOut() {
+        // log out and return to log in page
         FirebaseAuth.getInstance().signOut();
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();

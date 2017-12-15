@@ -67,6 +67,7 @@ public class AddRecipeFragment extends Fragment {
 
         context = (Activity) getContext();
 
+        // load views
         editText = rootView.findViewById(R.id.ingredientName);
         submitIngredient = rootView.findViewById(R.id.buttonAddIngredient);
         submitRecipe = rootView.findViewById(R.id.buttonSubmitRecipe);
@@ -75,9 +76,11 @@ public class AddRecipeFragment extends Fragment {
         recipeName = rootView.findViewById(R.id.my_recipe_name);
         myInstructions = rootView.findViewById(R.id.my_recipe_instructions);
 
+        // define user and database
         user = FirebaseAuth.getInstance().getCurrentUser();
         mDatabase = FirebaseDatabase.getInstance().getReference("labels");
 
+        // set onclicklisteners
         submitIngredient.setOnClickListener(new GoSubmitIngredientClickListener());
         submitRecipe.setOnClickListener(new GoSubmitRecipeClickListener());
 
@@ -86,6 +89,7 @@ public class AddRecipeFragment extends Fragment {
             logOut();
         }
         else {
+            // load checkboxes with labels
             loadLabels();
         }
 
@@ -94,6 +98,7 @@ public class AddRecipeFragment extends Fragment {
     }
 
     private void logOut() {
+        // log out and go to login page
         FirebaseAuth.getInstance().signOut();
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
@@ -106,7 +111,9 @@ public class AddRecipeFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d("inside", "OnDataChange");
+                // number to create ids with
                 int idCount = 0;
+                // store checkboxes in list
                 checkBoxes = new ArrayList<>();
                 for (DataSnapshot snap: dataSnapshot.getChildren()) {
                     // calculate an id for the checkbox (werkt niet meer?)
@@ -115,14 +122,18 @@ public class AddRecipeFragment extends Fragment {
                     // create checkbox
                     CheckBox checkBox = new CheckBox(context);
 
+                    // get healthlabel from database
                     HealthLabel tagHealthlabel = snap.getValue(HealthLabel.class);
                     String checkBoxText = tagHealthlabel.getName().replace("-", " ");
                     checkBoxText = checkBoxText.substring(0, 1).toUpperCase() + checkBoxText.substring(1);
 
+                    // fill in the checkbox
                     checkBox.setText(checkBoxText);
                     checkBox.setTag(tagHealthlabel);
                     checkBox.setId(resourceId);
                     checkBoxes.add(checkBox);
+
+                    // update idCount
                     idCount += 1;
                 }
                 // show checkboxes
@@ -139,13 +150,14 @@ public class AddRecipeFragment extends Fragment {
     private void updateCheckboxes() {
         Log.d("inside", "updateCheckboxes");
         int size = checkBoxes.size();
+        // show every checkbox
         for (int i = 0; i < size; i++) {
             labelLayout.addView(checkBoxes.get(i));
         }
     }
 
     private class GoSubmitIngredientClickListener implements View.OnClickListener {
-
+        // function to add ingredients
         private int idCount = 0;
 
         @Override
@@ -165,20 +177,29 @@ public class AddRecipeFragment extends Fragment {
 
                 // create resourceid (werkt niet meer?)
                 int resourceId = context.getResources().getIdentifier("ingredient_" + idCount, "string", context.getPackageName());
+
+                // update idCount
                 idCount += 1;
-//                int resourceId = context.getResources().getIdentifier(ingredient, "string", context.getPackageName());
+
+                // original way to create id:
+                // int resourceId = context.getResources().getIdentifier(ingredient, "string", context.getPackageName());
                 Log.d("resourceId:", resourceId +"");
+
+                // set values to linear layout
                 newLinearLayout.setId(resourceId);
                 newLinearLayout.setTag(ingredient);
                 newLinearLayout.setGravity(View.FOCUS_RIGHT);
 
+                // set params for textview and button
                 LayoutParams lparams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
+                // set values to textview
                 TextView newTextView = new TextView(context);
                 newTextView.setLayoutParams(lparams);
                 newTextView.setText(ingredient);
                 newLinearLayout.addView(newTextView);
 
+                // set values to button
                 Button delete = new Button(context);
                 delete.setLayoutParams(lparams);
                 delete.setTag(resourceId);
@@ -186,6 +207,7 @@ public class AddRecipeFragment extends Fragment {
                 delete.setOnClickListener(new GoDeleteClickListener());
                 newLinearLayout.addView(delete);
 
+                // add created layout to the ingredientlayout
                 ingredientLinearLayout.addView(newLinearLayout);
             }
         }
@@ -194,7 +216,7 @@ public class AddRecipeFragment extends Fragment {
     private class GoDeleteClickListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
-            // delete ingredient
+            // function to delete ingredient
             Button button = (Button) view;
             int resourceId = (Integer) button.getTag();
             LinearLayout linearLayout = rootView.findViewById(resourceId);
@@ -206,9 +228,10 @@ public class AddRecipeFragment extends Fragment {
     }
 
     private class GoSubmitRecipeClickListener implements View.OnClickListener {
+        // function to submit a recipe and save it to the database
         @Override
         public void onClick(View view) {
-            //define healthlabels
+            // define healthlabels and if the preference is true or false
             ArrayList<HealthLabel> healthLabels = new ArrayList<>();
             for (int i = 0; i < labelLayout.getChildCount(); i++) {
                 View v = labelLayout.getChildAt(i);

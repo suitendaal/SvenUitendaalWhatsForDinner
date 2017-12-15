@@ -44,12 +44,13 @@ public class RecipeAdapter extends ArrayAdapter {
         LayoutInflater layoutInflater = (LayoutInflater) theContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.row_recipe, parent, false);
 
+        // load views
         ImageView imageView = view.findViewById(R.id.imageView);
         TextView recipeTitle = view.findViewById(R.id.recipe_title);
         TextView recipeSource = view.findViewById(R.id.recipe_source);
 
+        // set title, source and image
         Recipe recipe = recipes.get(position);
-
         recipeTitle.setText(recipe.name);
 
         String source = recipe.source;

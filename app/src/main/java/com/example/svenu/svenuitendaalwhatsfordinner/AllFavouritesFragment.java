@@ -3,7 +3,6 @@ package com.example.svenu.svenuitendaalwhatsfordinner;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
@@ -31,9 +30,6 @@ import java.util.ArrayList;
 public class AllFavouritesFragment extends ListFragment {
 
     private Activity context;
-    private FirebaseDatabase database;
-    private DatabaseReference userRef;
-    private FirebaseAuth auth;
     private FirebaseUser user;
 
     public AllFavouritesFragment() {
@@ -45,10 +41,7 @@ public class AllFavouritesFragment extends ListFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        database = FirebaseDatabase.getInstance();
-        userRef = database.getReference();
-        auth = FirebaseAuth.getInstance();
-        user = auth.getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
         context = (Activity) getContext();
 
         // check if user is logged in
@@ -58,6 +51,7 @@ public class AllFavouritesFragment extends ListFragment {
         else {
             // set titlebar title
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.favourites_all_name);
+
             // show favourites
             fillInListView();
         }
@@ -75,9 +69,11 @@ public class AllFavouritesFragment extends ListFragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                    // add recipe to list
                     Recipe recipe = snap.getValue(Recipe.class);
                     recipes.add(recipe);
                 }
+                // show list in listview
                 RecipeAdapter recipeAdapter = new RecipeAdapter(context.getApplicationContext(), recipes);
                 AllFavouritesFragment.this.setListAdapter(recipeAdapter);
             }
@@ -90,6 +86,7 @@ public class AllFavouritesFragment extends ListFragment {
     }
 
     private void logOut() {
+        // log out and return to log in page
         FirebaseAuth.getInstance().signOut();
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();

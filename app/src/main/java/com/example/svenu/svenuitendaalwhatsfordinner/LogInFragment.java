@@ -61,13 +61,17 @@ public class LogInFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
 
+        // define views
         rootView = inflater.inflate(R.layout.fragment_log_in, container, false);
         button1 = rootView.findViewById(R.id.buttonSignUp);
         button2 = rootView.findViewById(R.id.buttonLogIn);
 
         theContext = (Activity) getContext();
 
+        // log in listener
         setListener();
+
+        // log in and sign up buttons
         button1.setOnClickListener(new GoButtonClickListener());
         button2.setOnClickListener(new GoButtonClickListener());
 
@@ -78,15 +82,15 @@ public class LogInFragment extends Fragment {
     private void getHealthLabels(final String email) {
         // get all healthlabel and store them with the new user
         DatabaseReference labelRef = database.child("labels");
-        //You can use the single or the value.. depending if you want to keep track
-
         labelRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap: dataSnapshot.getChildren()) {
+                    // add healthlabel to list with healthlabels
                     HealthLabel healthLabel = snap.getValue(HealthLabel.class);
                     healthLabels.add(healthLabel);
                 }
+                // store new user with the derived healthlabels
                 storeUser(email);
             }
 
@@ -114,6 +118,7 @@ public class LogInFragment extends Fragment {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 user = firebaseAuth.getCurrentUser();
+                // if user is logged in, go to next fragment
                 if (user != null) {
                     Toast.makeText(theContext.getApplicationContext(), "Logged in",
                             Toast.LENGTH_SHORT).show();
@@ -143,12 +148,13 @@ public class LogInFragment extends Fragment {
     }
 
     public void createUser(final String email, String password) {
-        // create user
+        // create user in database
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(theContext, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            // first derive healthlabels, then set user
                             getHealthLabels(email);
                         }
                         else {
@@ -180,12 +186,13 @@ public class LogInFragment extends Fragment {
     }
 
     private void startFavouritesFragment() {
+        // store healthlabels in user's database
         database.child(user.getUid()).child("labels").setValue(healthLabels);
+
+        // start new fragment
         MyFavouritesFragment myFavouritesFragment = new MyFavouritesFragment();
-        Bundle args = new Bundle();
-        args.putString("userUid", user.getUid());
-        myFavouritesFragment.setArguments(args);
         FragmentManager fm = getFragmentManager();
+        // delete login fragment from stack
         if (fm != null) {
             fm.popBackStack();
         }
@@ -204,6 +211,7 @@ public class LogInFragment extends Fragment {
             String email = emailTextView.getText().toString();
             String password = passwordTextView.getText().toString();
 
+            // make sure user filled in something
             if (email.equals("") || password.equals("")) {
                 Toast.makeText(theContext.getApplicationContext(), "WTF ben je aan het doen man?",
                         Toast.LENGTH_SHORT).show();
@@ -211,9 +219,11 @@ public class LogInFragment extends Fragment {
             else {
                 switch (view.getId()) {
                     case R.id.buttonLogIn:
+                        // log in
                         logInUser(email, password);
                         break;
                     case R.id.buttonSignUp:
+                        // sign up
                         createUser(email, password);
                         break;
                 }
@@ -222,6 +232,7 @@ public class LogInFragment extends Fragment {
     }
 
     public boolean onBackPressed() {
+        // on back pressed: finish application
         getActivity().finish();
         return true;
     }
